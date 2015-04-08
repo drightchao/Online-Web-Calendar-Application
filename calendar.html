@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<HTML>
+<head>
+<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.2/themes/start/jquery-ui.css"
+ 
+type="text/css" rel="Stylesheet" /> <!-- We need the style sheet linked
+ above or the dialogs/other parts of jquery-ui won't display correctly!-->
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.3/jquery.min.js"></script><!-- The main library. 
+Note: must be listed before the jquery-ui library -->
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.5/jquery-ui.min.js"></script><!-- jquery-UI 
+hosted on Google's Ajax CDN-->
+<!-- Note: you can download the javascript file from the link
+
+provided on the google doc, or simply provide its URL
+
+in the src attribute (microsoft and google also host the jQuery
+
+library-->
+<script type="text/javascript">
+    function showregdialog()
+    {
+	$("#regDial").dialog();
+    }
+
+    function closeregdialog()
+    {
+	$("#regDial").dialog("close");
+    }
+</script>
+<script src="//cdn.sencha.io/ext-4.2.0-gpl/ext.js"></script> <!-- External js source link-->
+<script type="text/javascript" src="calendar_math.js"></script>
+<script type="text/javascript" src="delete_dom.js"></script>
+<script type="text/javascript">
+   // your code goes here
+   // For our purposes, we can keep the current month in a variable in the global scope
+	//var now = new Date();
+	var currentMonth = new Month(2014, 9); // October 2014
+	
+	var monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ]; 
+	// Change the month when the "next" button is pressed
+
+	 
+	// This updateCalendar() function only alerts the dates in the currently specified month.  You need to write
+	// it to modify the DOM (optionally using jQuery) to display the days and weeks in the current month.
+	function updateCalendar(){
+		//delete all DOMs written before.
+		var mainTableHtmlObj = document.getElementById("mainTable");
+		while(mainTableHtmlObj.firstChild){
+                    mainTableHtmlObj.removeChild(mainTableHtmlObj.firstChild);
+                }
+		var h1HtmlObj = document.getElementsByTagName("h1");
+		while(h1HtmlObj[0].firstChild){
+                    h1HtmlObj[0].removeChild(h1HtmlObj[0].firstChild);
+                }
+		
+		//alert("test!");
+		
+		var weeks = currentMonth.getWeeks();
+	 	//Ext.DomHelper.useDom = true; // See next section for an explanation of this line
+		h1HtmlObj[0].appendChild(document.createTextNode(monthNames[currentMonth.month] +"  "+ currentMonth.year));
+		for(var w in weeks){
+			var days = weeks[w].getDates();
+			// days contains normal JavaScript Date objects.
+			
+			// add a <tr> tag for each week in the calendar
+			var weekHtmlObj = document.createElement("tr");
+			
+			//alert("Week starting on "+days[0]);
+				for(var d in days){
+					// You can see console.log() output in your JavaScript debugging tool, like Firebug,
+					// WebWit Inspector, or Dragonfly.
+					// Write DOM here for each day using Ext JS or ajax.
+					var today = days[d];
+					var today_date = today.getDate();
+					var today_month = 1+today.getMonth();
+					var today_year = today.getFullYear();
+					var dateHtmlObj = document.createElement("td");
+					if (today.getDate() < 10) {
+					    today_date = "0"+today.getDate();
+					}else{
+					    today_date = today.getDate();
+					}
+					
+					if ((today.getMonth()+1) < 10) {
+					    today_month = "0"+(1+today.getMonth());
+					}else{
+					    today_month = 1+today.getMonth();
+					}
+					
+					if (today.getFullYear() <1000 && today.getFullYear() >99) {
+					    today_year = "0"+today.getFullYear();
+					}else if (today.getFullYear() <100 && today.getFullYear() > 9) {
+					    today_year = "00"+today.getFullYear();
+					}else if (today.getFullYear()<10 && today.getFullYear() >0) {
+					    today_year = "000"+today.getFullYear();
+					}else if(today.getFullYear()<=0) {
+					    alert("You mean Before centary? That's too long ago...");
+					}else{ today_year = today.getFullYear();}
+					
+					dateHtmlObj.setAttribute("id", today_year+"-"+today_month+"-"+today_date);
+					if (today.getMonth() < currentMonth.month) {
+						// days in the previous month
+						if ((today.getDay() == 0) || (today.getDay() == 6)) {
+							// weekends of previous month
+							dateHtmlObj.setAttribute("class","weekend previous");
+						}else{
+							// regular weekdays
+							dateHtmlObj.setAttribute("class","previous");
+						}
+						var spanHtmlObj = document.createElement("span");
+						spanHtmlObj.setAttribute("class","date")
+						spanHtmlObj.appendChild(document.createTextNode(today.getDate()));
+						dateHtmlObj.appendChild(spanHtmlObj);
+						var divHtmlObj = document.createElement("div"); // events will be in div
+						divHtmlObj.setAttribute("class","previous_month_day");
+						dateHtmlObj.appendChild(divHtmlObj);
+						//console.log(days[d].toISOString());
+						weekHtmlObj.appendChild(dateHtmlObj);
+					}else if (today.getMonth() > currentMonth.month) {
+						// days in the next month
+						if ((today.getDay() == 0) || (today.getDay() == 6)) {
+							// weekends of previous month
+							dateHtmlObj.setAttribute("class","weekend next");
+						}else{
+							// regular weekdays
+							dateHtmlObj.setAttribute("class","next");
+						}
+						var spanHtmlObj = document.createElement("span");
+						spanHtmlObj.setAttribute("class","date")
+						spanHtmlObj.appendChild(document.createTextNode(today.getDate()));
+						dateHtmlObj.appendChild(spanHtmlObj);
+						var divHtmlObj = document.createElement("div"); // events will be in div
+						divHtmlObj.setAttribute("class","next_month_day");
+						dateHtmlObj.appendChild(divHtmlObj);
+						//console.log(days[d].toISOString());
+						weekHtmlObj.appendChild(dateHtmlObj);
+					}else{
+						//days in the current month
+						if ((today.getDay() == 0) || (today.getDay() == 6)) {
+							// weekends of previous month
+							dateHtmlObj.setAttribute("class","weekend");
+						}else{
+							// regular weekdays
+							//dateHtmlObj.setAttribute("class","previous");
+						}
+						var spanHtmlObj = document.createElement("span");
+						spanHtmlObj.setAttribute("class","date")
+						spanHtmlObj.appendChild(document.createTextNode(today.getDate()));
+						dateHtmlObj.appendChild(spanHtmlObj);
+						var divHtmlObj = document.createElement("div"); // events will be in div
+						divHtmlObj.setAttribute("class","day");
+						dateHtmlObj.appendChild(divHtmlObj);
+						//console.log(days[d].toISOString());
+						weekHtmlObj.appendChild(dateHtmlObj);
+					}
+				    }	
+			mainTableHtmlObj.appendChild(weekHtmlObj);
+		}
+	}
+	
+	function updateEvents(){
+	    //delete the written events
+	    var writtenEventsHtmlObj = document.getElementsByClassName("day");
+	    for(var i=0; i<writtenEventsHtmlObj.length; i++){
+		delete_dom(writtenEventsHtmlObj[i]);
+	    }
+	    var year = currentMonth.year;
+	    var month = currentMonth.month+1;
+	    var userinfo = document.getElementById("login_block").childNodes;
+	    //var username_display = userinfo[0].textContent;
+	    //check log in
+	    if (userinfo[0].tagName == "P") {
+		//logged in
+		var verfiyString = "&usertoken=" +encodeURIComponent(userinfo[1].className) + "&username_display=" + encodeURIComponent(userinfo[0].textContent);	 
+	
+		var localString = "year=" + encodeURIComponent(year) + "&month=" + encodeURIComponent(month);
+		var dataString = localString + verfiyString;
+		var xmlHttp = new XMLHttpRequest();
+		xmlHttp.open("POST", "getEvents_ajax.php", true);
+		xmlHttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded"); // It's easy to forget this line for POST requests
+		xmlHttp.addEventListener("load", function(event){
+			var jsonData = JSON.parse(event.target.responseText); // parse the JSON into a JavaScript object
+			if(jsonData.success){  // in PHP, this was the "success" key in the associative array; in JavaScript, it's the .success property of jsonData
+				
+				// write Dom
+			       // var jsonData = JSON.parse(event.target.responseText);
+				var count = jsonData.cnt;
+				for(var j=0;j<count;j++){
+				    var dateNumber = "date" + j;
+				    var titleNumber = "title" + j;
+				    var event_idNumber  = "event_id" + j;
+				    var dateString = jsonData[dateNumber];
+				    var titleString = jsonData[titleNumber];
+				    var event_idString = jsonData[event_idNumber];
+				    var eventTdHtmlObj = document.getElementById(dateString);
+				    var eventChildNodes = eventTdHtmlObj.childNodes;
+				    var eventdivHtmlobj = eventChildNodes[eventChildNodes.length-1];
+				    
+				    var eventPHtmlObj = document.createElement("p");
+				    eventPHtmlObj.setAttribute("id", event_idString);
+				    //eventPHtmlObj.setAttribute("onclick", )
+				    var titleDisplay = document.createTextNode(titleString);
+				    eventPHtmlObj.addEventListener("click", view_event, false);
+				    eventPHtmlObj.appendChild(titleDisplay);
+				    eventdivHtmlobj.appendChild(eventPHtmlObj);
+				}
+				//alert("Update success!");
+			}else{
+				alert("Update Failed.  "+jsonData.message);
+			}
+		}, false); // Bind the callback to the load event
+		xmlHttp.send(dataString); // Send the data
+	    }
+	}
+	//function test(){alert("test");}
+	document.addEventListener("DOMContentLoaded", updateCalendar, false); // update the calendar for the current month once the page is loaded.
+
+</script>
+
+<title>Calendar</title>
+<style>#regDial {display: none}</style>
+<style type="text/css">
+html, body { margin: 0; padding: 0 }
+body { background-color:#060; }
+#container { margin: 3em auto  0 3em; padding-bottom: 3em; background-color: #fff; }
+#month { border-collapse: collapse; margin-left: 2em; }
+#month th, #month td { border: 1px solid #000; }
+#month thead { background-color:#9c9; }
+#month td { width: 7em; height: 7em; padding: .2em; vertical-align: top; overflow: auto; }
+td .day { width: 7em; height: 6em; overflow:auto; margin-top: 0;}
+#month tbody .weekend { background-color:#ded; }
+#month tbody .next, #month tbody .previous { background-color:#ddd; }
+.rtop { display:block; background:#060; }
+.rtop * { display: block; height: 1px; overflow: hidden; background:#fff; }
+.r1{margin: 0 0 0 5px}
+.r2{margin: 0 0 0 3px}
+.r3{margin: 0 0 0 2px}
+.r4{margin: 0 0 0 1px; height: 2px}
+#container h1 { margin: 0 0 .5em .5em; font: 2em Arial, Helvetica, sans-serif; color: #060; }
+#month th { font: 1em  bold Arial, Helvetica, sans-serif; }
+p {margin-top: 0; }
+#next_month_btn {left:495px; top: 70px; position: absolute;}
+#previous_month_btn {left:455px; top: 70px; position: absolute;}
+#addEvent_btn {left: 600px; top: 70px; position: absolute;}
+#event_details {left: 940px; height: auto; width: 200px; position: absolute;}
+#login_block { float: right; margin-right: 15px; margin-top: 10px;}
+</style>
+</head>
+
+<body>
+<div id="container">
+<div id="login_block">
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="login_btn">Log In</button>
+    <input type="button" value="Register" onclick=showregdialog() />
+</div>
+<div id="regDial" title="Create A New User">
+<p>
+        <label>Username:</label>
+        <input type="text" id="new_username" />
+        <br />
+        <label>Password:</label>
+        <input type="password" id="new_pass" />
+        <br />
+</p>
+<p>        
+	<input type="button" value="Register" id="register_btn" />
+        <input type="button" value="cancel" id="reg_cancel_btn" />
+	<script type="text/javascript">document.getElementById("reg_cancel_btn").addEventListener("click",closeregdialog ,false); </script>
+</p>
+</div>
+<script type="text/javascript" src="ajax.js"></script> <!-- load the JavaScript file -->
+<b class="rtop"><b class="r1"></b> <b class="r2"></b><b class="r3"></b> <b class="r4"></b></b>
+<h1></h1>
+<button type="button" id="previous_month_btn"><img src="https://openclipart.org/image/300px/svg_to_png/202787/arrow-left.png" width="25" height="25" alt="previous"></button>
+<button type="button" id="next_month_btn"><img src="https://openclipart.org/image/300px/svg_to_png/202788/arrow-right.png" width="25" height="25" alt="next"></button>
+<button type="button" id="addEvent_btn"><img src="http://icons.iconarchive.com/icons/hopstarter/button/48/Button-Add-icon.png" width="25" height="25" alt="add"></button>
+
+<fieldset id="event_details">
+    <legend>Event Memo</legend>
+    <form id="view_event">
+	
+    </form>
+</fieldset>
+
+<table id="month">
+	<thead>
+		<tr>
+			<th class="weekend">Sunday</th>
+			<th>Monday</th>
+			<th>Tuesday</th>
+			<th>Wednesday</th>
+			<th>Thursday</th>
+			<th>Friday</th>
+			<th class="weekend">Saturday</th>
+		</tr>
+	</thead>
+	<tbody id="mainTable">
+		
+	</tbody>
+</table>
+
+</div>
+<script type="text/javascript" >
+	document.getElementById("next_month_btn").addEventListener("click", function(event){
+		currentMonth = currentMonth.nextMonth(); // Previous month would be currentMonth.prevMonth()
+		updateCalendar(); // Whenever the month is updated, we'll need to re-render the calendar in HTML
+		//alert("The new month is "+currentMonth.month+" "+currentMonth.year);
+		delete_dom(document.getElementById("view_event"));
+		updateEvents();
+	}, false);
+	 
+	// Change the month when the "previous" button is pressed
+	document.getElementById("previous_month_btn").addEventListener("click", function(event){
+		currentMonth = currentMonth.prevMonth(); // Previous month would be currentMonth.prevMonth()
+		updateCalendar(); // Whenever the month is updated, we'll need to re-render the calendar in HTML
+		//alert("The new month is "+currentMonth.month+" "+currentMonth.year);
+		delete_dom(document.getElementById("view_event"));
+		updateEvents();
+	}, false);
+	
+	document.getElementById("addEvent_btn").addEventListener("click", function(event){
+		//need to check whether user logged in
+		addEvent();
+	    }, false);
+	
+</script>
+<script type="text/javascript" src="view_event.js"></script>
+<script type="text/javascript" src="edit_event.js"></script>
+<script type="text/javascript" src="delete_event.js"></script>
+<script type="text/javascript" src="updateEvent.js"></script>
+<script type="text/javascript" src="addEvent.js"></script>
+<script type="text/javascript" src="writeEventToDatabase.js"></script>
+
+</body>
+</html>
